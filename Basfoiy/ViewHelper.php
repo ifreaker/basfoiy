@@ -2,22 +2,62 @@
 
 Class ViewHelper
 {
-	private $location;
+	private $config;
 
-	public function setLocation($location)
+	private $location;
+	private $header;
+	private $footer;
+
+	private $template;
+	private $loadTemplate;
+
+	private $url;
+
+	public function __construct(Array $config)
 	{
-		$this->location = $location;
+		if (isset($config['db']))
+		{
+			unset($config['db']);
+		}
+		$this->config = $config;
+		$this->setTemplate();
+
+		$this->url = new UrlHelper();
+	}
+
+	public function setTemplate($template = false)
+	{
+		$this->template = ($template === false) ? false : $template;
+		$this->header = ($template === false) ? 'View/header.php' : 'View/' . $this->template . '/header.php';
+		$this->footer = ($template === false) ? 'View/footer.php' : 'View/' . $this->template . '/footer.php';
+		return $this;
+	}
+
+	public function setLocation($location,$template = true)
+	{
+		$this->location = ($this->template === false) ? 'View/' . $location . '.php' : 'View/' . $this->template . '/' . $location . '.php';
+		$this->loadTemplate = $template;
 		return $this;
 	}
 
 	public function load($variables = null)
-	{	
+	{
 
+		$rootUrl = $this->url->getRootUrl();
 		if (is_array($variables)) {
 			extract($variables);
 		}
-		include 'View/header.php';
-		include 'View/' . $this->location . '.php';
-		include 'View/footer.php';
+
+		if ($this->loadTemplate === false) 
+		{
+			include $this->location;
+		}
+		else
+		{
+			include $this->header;
+			include $this->location;
+			include $this->footer;
+		}
 	}
+
 }

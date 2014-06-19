@@ -8,10 +8,11 @@ var api = null;
 
 $(document).ready(function(){
     thaanaKeyboard.defaultKeyboard='phonetic';
+    thaanaKeyboard.setHandlerById("basdhisuggest","enable");
     $("#followingBallsG").hide();
     $("#basterm").focus();
 	//scroll to searchbox 
-	$('html, body').animate({ scrollTop: $('#basterm').offset().top }, 'slow');
+	//$('html, body').animate({ scrollTop: $('#basterm').offset().top }, 'slow');
 
 });
 
@@ -38,8 +39,17 @@ $("#baslang").click(
 	}
 );
 
-$("input").keyup(function(){
-	if ($(this).val() === '') {
+$("#basterm").keyup(function(){
+	searchInterations();
+});
+
+$("#basform").submit(function(){
+	searchInterations();
+	return false;
+});
+
+function searchInterations() {
+	if ($("#basterm").val() === '') {
 		$("#baslogo").removeClass("baslogosmall");
 		$("#bascontent").removeClass("bascontentsmall");
 		$("#basresults ul").fadeOut("slow",function(){
@@ -56,11 +66,7 @@ $("input").keyup(function(){
 			delay(function(){callWords();}, 500 );
 		} 	
 	}
-});
-
-$("#basform").submit(function(){
-	return false;
-});
+}
 
 // ajax call
 function callWords() {
@@ -78,16 +84,73 @@ function callWords() {
 		} else {
 			$("#basresults ul")
 				.hide()
-				.html('<li class="basword clear"><div class="basbox baseng"><a href="#">Not found</a></div><div class="basbox basdv"><a href="#" class="dv">ނުފެނުނު</a></div></li>')
+				.html('<li class="basword suggestprompt clear"><a href="#" >Suggest?</a></li>')
+				// .html('<li class="basword clear"><div class="basbox baseng"><a href="#">Not found</a></div><div class="basbox basdv"><a href="#" class="dv">ނުފެނުނު</a></div></li>')
 				.fadeIn("slow",function(){});
 		}
 		$("#followingBallsG").hide();
 	}).error(function(){
 		if ($("#basterm").val() !== '') {
-			$("#basresults .baserror").fadeIn();
+			$("#basresults .error").fadeIn();
 		}
 		$("#followingBallsG").hide();
 	});
+}
+
+$("#basresults").on("click",".suggestprompt a",function() { 
+	$("#bassuggest").fadeIn(); 
+	$("#bassuggest  .notice").fadeOut();
+	reloadCaptcha();
+	return false;
+});
+
+$("#suggestClose").click(function(){$("#bassuggest").fadeOut(); return false;});
+
+$("#bassuggest form").submit(function() {
+	var ready = false;
+	$("#bassuggest input[type=text]").each(function() {
+		if (ready === false) {
+			ready = $.trim($(this).val()).length > 0;
+		}
+	});
+	if (ready === false) { 
+		$("#bassuggest input").addClass("error"); 
+		return false;
+	}
+
+	if ($.trim($("#recaptcha_response_field").val()).length < 1) {
+		$("#recaptcha_response_field").addClass("error"); 
+		return false;
+	}
+
+	var suggestData = $("#bassuggest form").serialize();
+	reloadCaptcha();
+	$.post("suggest",suggestData,function(data){
+		if (data.error === false) {
+			$("#bassuggest  .success").text(data.msg).fadeIn();
+		} else {
+			$("#bassuggest  .error").text(data.msg).fadeIn();
+		}
+		$("#bassuggest input").val('');
+	}).error(function(){
+		$("#bassuggest  .error").fadeIn();
+	});
+	return false;
+});
+
+$("#bassuggest input").keydown(function(){
+	$("#bassuggest input").removeClass("error");
+	$("#bassuggest  .notice").fadeOut();
+});
+
+function reloadCaptcha() {
+	Recaptcha.create(recaptchaKey,
+		"bassuggestrecaptcha",
+		{
+			theme: "clean",
+			callback: Recaptcha.focus_response_field
+		}
+	);
 }
 
 // delay actions

@@ -6,7 +6,7 @@
 
 ::-webkit-scrollbar {display: none;}
 *{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
-input:focus {outline: none; }
+input:focus,button:focus {outline: none; }
 
 body {
 	margin: 0;
@@ -14,6 +14,10 @@ body {
 	padding-top: 3%;
 	font: 15px Tahoma, Helvetica, Arial, sans-serif;
 	background : url(../img/pat.png);
+}
+
+h2 {
+	margin-top: 5px;
 }
 
 .hide {
@@ -31,14 +35,38 @@ input.dv {
 	line-height: 2.8;
 }
 
-.baserror {
-	background: #9e3e3e;
+.notice {
 	padding: 10px;
-	color: #fff;
+	color: #fff !important;
 	text-align: center;
+	width: 620px;
+	margin: 0 auto;
 }
 
-.baserror .dv {
+.notice a {
+	text-decoration: none;
+	font-style: italic;
+}
+
+.notice.error {
+	background: #9e3e3e;
+}
+
+.notice.success {
+	background: #6b9e3e;
+}
+
+.notice.neutral {
+	background: #fafafa;
+	color: #aeaeae !important;
+	border: 1px solid #EFEFEF;
+}
+
+.notice.neutral a {
+	color: #aeaeae !important;
+}
+
+.notice .dv {
 	font-size: 1.2em;
 }
 
@@ -69,6 +97,13 @@ header,footer {
 	transition: all 0.8s;
 }
 
+#bas404 {
+	width: 500px;
+	display: block;
+	margin: 0 auto;
+	padding-top: 10%;
+}
+
 .baslogosmall {
 	height: 100px !important;
 	width: 100px !important;
@@ -90,6 +125,7 @@ header,footer {
 
 #basform {
 	width: 100%;
+	position: relative;
 }
 
 #basform * {
@@ -113,6 +149,21 @@ header,footer {
 	border: 1px solid #fff;
 }
 
+.searchbtn i {
+	color: #bdbdbd !important;
+}
+
+.searchbtn {
+	border: none;
+	background: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 60px;
+	padding: 20px;
+	font-size: 1.2em;
+}
+
 #bastext {
 	margin-left: 60px;
 }
@@ -129,10 +180,6 @@ header,footer {
 
 #basresults ul {
 	padding : 0;
-}
-
-.baseng {
-	float: left;
 }
 
 .basdv {
@@ -154,6 +201,11 @@ header,footer {
 	-webkit-transition: all 0.8s;
 	-moz-transition: all 0.8s;
 	transition: all 0.8s;
+}
+
+.baseng {
+	float: left;
+	padding-top: 13px;
 }
 
 .basbox a {
@@ -192,15 +244,122 @@ header,footer {
 	margin-right: 5px;
 }
 
-#basquote {
+.suggestprompt a {	
+	display: block;
+	width: 100%;
+	text-align: center;
+	padding: 10px;
+	text-decoration: none;
+	color: #7e7e7e;
+}
+
+#bassuggest {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	background: url('../img/lighten.png');
+	z-index: 3;
+	display: none;
+}
+
+#bassuggest form {
+	display: block;
 	width: 620px;
 	margin: 0 auto;
+	margin-top: 15%;
+	background: #fff;
+	padding: 20px;
+	border: 1px solid #d6d6d6;
+	position: relative;
+}
+
+#bassuggest .notice {
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+#suggestClose {
+	width: 20px !important;
+	display: block;
+	height: 20px;
+	border: 1px solid #d6d6d6;
+	border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	color: #fff !important;
+	text-decoration: none;
+	padding: 1px 0px 0px 6px;
+	font-size: 0.8em;
+	background: #d6d6d6;
+	float: right;
+	margin-top: -31px;
+	margin-right: -8px;
+
+}
+
+#suggestClose:hover {
+	background: #fff;
+	color: #d6d6d6 !important;
+}
+
+#bassuggest input:not(#recaptcha_response_field) {
+	display: block;
+	height: 40px;
+	border: 1px solid #d6d6d6;
+	padding: 10px;
+	font-size: 1.1em;
+	width: 100%;
+	margin-bottom: 10px;
 	color: #7e7e7e;
-	font-size: 1.5em;
-	min-height: 42px;
-	background: url('../img/quote.png') no-repeat center;
-	padding : 20px;
-	line-height: 1.5em;
+}
+
+#basdhisuggest {
+	direction: rtl;
+	font-family: Mv Iyyu Formal;
+	line-height: -1em;
+}
+
+#recaptcha_table {
+	margin: 0 auto !important;
+}
+
+.recaptcha_input_area input {
+	border: 1px solid #d6d6d6 !important;
+	padding: 2px !important;
+}
+
+#recaptcha_privacy a {
+	color: #d6d6d6;
+	font-size: 0.9em;
+}
+
+#bassuggestrecaptcha {
+	margin-bottom: 10px;
+}
+
+
+#bassuggest button {
+	display: block;
+	height: 40px;
+	background: #6b9e3e;
+	border: 1px solid #6b9e3e;
+	color: #fff;
+	margin-bottom: 0;
+	font-size: 1.1em;
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+#basquote {
+    width: 620px;
+    color: #7E7E7E;
+    font-size: 1.5em;
+    background: url('../img/quote.png') no-repeat scroll center center transparent;
+    margin: 1px auto 5px;
+    padding: 20px;
+    line-height: 0;
+    height: 42px;
 }
 
 #basdev {
@@ -214,6 +373,21 @@ header,footer {
 	text-indent: -9999px;
 	width: 30px;
 	height: 30px;
+}
+
+.fb-like {
+	padding: 10px;
+	margin-top: 10px;
+}
+
+.playstorbadge {
+	display: block;
+	clear: both;
+}
+
+.cclicence {
+	display: block;
+	clear: both;
 }
 
 #inm {
@@ -235,8 +409,26 @@ header,footer {
 
 #copy {
 	font-size: 0.8em;
-	color: #7e7e7e;
+	color: #aeaeae;
 }
+
+input.error {
+	border: 1px solid #9e3e3e !important;
+}
+
+.basvindhu {
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	margin-top: 10px;
+}
+
+.basvindhu path {
+	fill: none;
+	stroke: #6b9e3e;
+}
+
+.basvindhu .axis path { display: none; }
 
 
 
@@ -271,6 +463,14 @@ header,footer {
 		clear: both;
 	}
 
+	#bassuggest form {
+		width: 100%;
+	}
+
+}
+
+@media only screen and (max-width: 500px) {
+	#bas404 { width: 100%; }
 }
 
 

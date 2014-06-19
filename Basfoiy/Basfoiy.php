@@ -9,7 +9,7 @@ Class Basfoiy
 {
 
 	private $config;
-	private $urlParam;
+	public $url;
 	private $db;
 	private $view;
 
@@ -24,9 +24,9 @@ Class Basfoiy
 		// set database
 		$this->db = new Db($this->config['db']);
 		// set url params
-		$this->urlParam = $this->parseUrl();
+		$this->url = new UrlHelper();
 		// set view helper
-		$this->view = new ViewHelper();
+		$this->view = new ViewHelper($this->config);
 		// set csrf token key
 		$this->tokenKey = md5($config["token"]);
 
@@ -61,7 +61,8 @@ Class Basfoiy
 
 		// ignore all requests except needed ones 
 		$keyword = isset($_POST['basterm']) ? $_POST['basterm'] : false;
-		if ($this->checkToken() === false || $_SERVER['REQUEST_METHOD'] !== 'POST' || $keyword === false || $keyword == '')
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $keyword === false || $keyword == '')
+		// if ($this->checkToken() === false || $_SERVER['REQUEST_METHOD'] !== 'POST' || $keyword === false || $keyword == '')
 		// if ($keyword === false || $keyword == '')
 		{
 			exit(json_encode($output));
@@ -112,18 +113,122 @@ Class Basfoiy
 		{
 			$output['error'] = false;
 			$output['result'] = $result;
+
+			foreach ($result as $bas) {
+				$this->db->insert(
+					'insert into bastracking (basid) values (:id)',
+					array(
+						'id' => $bas->id
+						)
+					);
+			}
+
 		} 
+		else
+		{
+			if (strlen($keyword) > 2) {
+				$this->db->insert(
+					'insert into baskeywords (keyword) values (:word)',
+					array(
+						'word' => $keyword
+						)
+					);
+			}
+		}
+
 		echo json_encode($output);
 
 	}
 
-	/*
-	 * return the parsed urlParams
-	 */
-	public function urlParam($index = 1)
+	public function notfoundAction()
 	{
-		$index = $index - 1;
-		return isset($this->urlParam[$index]) ? $this->urlParam[$index] : false;
+		$this->view->setLocation('404',false)->load();
+	}
+
+	public function suggestAction() {
+		// respond as json
+		header('Content-Type: application/json');
+
+		$proceed = false;
+		$table = 'bassuggests';
+		$key = isset($_POST['src']) ? $_POST['src'] : '';
+
+		if ($key == $this->config["appKey"]) 
+		{
+			$proceed = true;
+			$table = 'bassuggestapp';
+		} 
+		else
+		{
+			$resp = recaptcha_check_answer ($this->config["apiKeys"]["recaptcha"]["private"],
+	                                $_SERVER["REMOTE_ADDR"],
+	                                $_POST["recaptcha_challenge_field"],
+	                                $_POST["recaptcha_response_field"]);
+
+			$proceed = $resp->is_valid;
+			
+		}
+
+		if ($proceed)
+		{
+			if ($_POST['baseng'] == '' && $_POST['basdhi'] == '' && $_POST['baslatin'] == '')
+			{
+				echo json_encode(array(
+								"error" => true,
+								"msg" => "Please enter one of the words!"
+								));
+				exit;
+			}
+
+			$this->db->insert(
+				'insert into ' . $table . ' (eng,dhi,latin) values (:eng,:dhi,:latin)',
+				array(
+					'eng' => $_POST['baseng'],
+					'dhi' => $_POST['basdhi'],
+					'latin' => $_POST['baslatin']
+					)
+				);
+		}
+		// return
+		echo json_encode(array(
+								"error" => ($proceed) ? false : true,
+								"msg" => ($proceed) ? "Thank you!" : "Please Try again!"
+								));
+	}
+
+	public function statsAction() {
+		if (isset($_GET['json']))
+		{
+			header('Content-Type: application/json');
+
+			$minutes = 60;
+
+			$data = $this->db->query("
+									SELECT TIME_FORMAT( TIME,  '%H:%i' )  `time` , COUNT( 1 )  `words` 
+									FROM  `bastracking` 
+									GROUP BY HOUR( TIME ) , MINUTE( TIME ) 
+									ORDER BY id DESC 
+									LIMIT 20
+								");
+
+			$dataset = array();
+
+			for ($i=0; $i < $minutes; $i++) { 
+				$time = date("H:i",strtotime("-" . $i . " minutes"));
+				$words = 0;
+				foreach ($data as $reqtime) {
+					if ($reqtime->time == $time) {
+						$words = $reqtime->words;
+						break;
+					}
+				}
+				$point = array('time' => $time,'words' => $words);
+				array_push($dataset, $point);
+			}
+
+			echo json_encode($dataset);
+			exit();
+		}
 	}
 
 	/*
@@ -136,31 +241,11 @@ Class Basfoiy
 		return false;
 	}
 
-
-
-	/*
-	 * parse the current url
-	 */
-	private function parseUrl()
-	{
-		// identify sub directory
-		$subdir = explode('index.php',$_SERVER['PHP_SELF']);
-		$subdir = isset($subdir[0]) ? $subdir[0] : '';
-		$subdir = ($subdir == '/') ? '' : $subdir;
-		// prepare url params
-		$urlParams = str_replace($subdir,'',str_replace('index.php','',$_SERVER['REQUEST_URI']));
-		$urlParams = explode('/',$urlParams);
-		// eliminate empty values
-		foreach ($urlParams as $key => $value) {
-			if ($value == '') unset($urlParams[$key]);
-		}
-		// reorder array
-		return array_values($urlParams);
-	}
-
 }
 
 require_once 'Db.php';
 require_once 'ViewHelper.php';
+require_once 'UrlHelper.php';
+require_once 'Lib/recaptchalib.php';
 
 error_reporting(0);
